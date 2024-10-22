@@ -105,16 +105,29 @@ export default function App() {
     ]);
   };
 
+  const handleDeleteDevice = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/devices/${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      setDevices(devices.filter(device => device._id !== id));
+      setShowConfirmation(false);
+      setDeviceToDelete(null);
+    } catch (error) {
+      setError('Failed to delete device');
+    }
+  };
+
   return (
     <div className="app">
       <h1 className="title">EcoCycle</h1>
       <h2 className="subtitle">ESP32 Monitoring System</h2>
       <div className="main-content">
         <div className="content-header">
-        <button onClick={() => {
-          console.log("Opening Modal");
-          setIsModalOpen(true);
-        }} className="add-device-btn">Add ESP32</button>
+          <button onClick={() => setIsModalOpen(true)} className="add-device-btn">Add ESP32</button>
 
           <div className="notification-section">
             <button onClick={() => setShowNotifications(!showNotifications)} className="notification-btn">
@@ -150,11 +163,6 @@ export default function App() {
             </div>
           </div>
         </div>
-        <AddESP32Modal 
-          isOpen={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
-          onAdd={addDevice} 
-        />
         {editDevice && (
           <EditDeviceModal
             device={editDevice}
@@ -163,12 +171,24 @@ export default function App() {
           />
         )}
       </div>
+      <AddESP32Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onAdd={addDevice} 
+      />
       {showNotifications && (
         <NotificationList 
           notifications={notifications} 
           onClose={() => setShowNotifications(false)}
           onClear={() => setNotifications([])}
         />
+      )}
+      {showConfirmation && (
+        <div className="confirmation-modal">
+          <p>Are you sure you want to delete this device?</p>
+          <button onClick={() => handleDeleteDevice(deviceToDelete)}>Yes</button>
+          <button onClick={() => setShowConfirmation(false)}>No</button>
+        </div>
       )}
     </div>
   );

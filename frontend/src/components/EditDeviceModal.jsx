@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './EditDeviceModal.css';
 
-const EditDeviceModal = ({ device, onClose, onSave }) => {
+const EditDeviceModal = ({ device, onClose, onSave, onDelete }) => {
   const [name, setName] = useState(device.name);
   const [ip, setIp] = useState(device.ip);
 
@@ -13,6 +13,11 @@ const EditDeviceModal = ({ device, onClose, onSave }) => {
       ip,
       trashBins: device.trashBins
     });
+    onClose();
+  };
+
+  const handleDelete = async () => {
+    await onDelete(device._id);
     onClose();
   };
 
@@ -44,6 +49,7 @@ const EditDeviceModal = ({ device, onClose, onSave }) => {
           <div className="button-group">
             <button type="submit">Save</button>
             <button type="button" onClick={onClose}>Cancel</button>
+            <button type="button" onClick={handleDelete} className="delete-button">Delete</button>
           </div>
         </form>
       </div>
