@@ -1,0 +1,153 @@
+.device-card {
+  position: relative;
+  border-radius: 20px;
+  padding: 20px;
+  color: white;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+.device-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.60);
+  backdrop-filter: blur(10px);
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.device-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.device-card h2 {
+  margin: 0;
+  font-size: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.device-card p {
+  margin: 5px 0 15px;
+  font-size: 18px;
+  color: #cccccc;
+  position: relative;
+  z-index: 1;
+}
+
+.trash-bins {
+  border-radius: 20px;
+  border: 1px solid #515151;
+  background: transparent;
+  padding: 15px;
+  position: relative;
+  z-index: 1;
+}
+
+.trash-bins h3 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.bin-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.bin-button {
+  padding: 10px;
+  border-radius: 25px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.bin-button.bio,
+.bin-button.plastic,
+.bin-button.metal,
+.bin-button.others {
+  background-color: #027802;
+  color: rgb(255, 255, 255);
+}
+
+.bin-button.full {
+  background-color: #8B0000;
+  color: white;
+}
+
+.flashing {
+  animation: flash 1s linear infinite;
+}
+
+@keyframes flash {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.offline-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  border-radius: 20px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.full-modal {
+  position: fixed;
+  bottom: -100%;
+  left: 0;
+  right: 0;
+  background-color: rgba(139, 0, 0, 0.85);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  transition: bottom 0.3s ease-out;
+  z-index: 1000;
+}
+
+.full-modal.show {
+  bottom: 0;
+}
+
+.full-modal button {
+  margin-top: 10px;
+}
+
+.device-actions button {
+  margin-left: 10px; /* Add space between name and buttons */
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.device-actions button:hover {
+  transform: scale(1.1);
+  color: #4CAF50; /* Change button color on hover */
+}

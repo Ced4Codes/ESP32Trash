@@ -1,0 +1,21 @@
+.navbar {
+  padding: 30px 0;
+}
+
+.navbar-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.navbar h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 50px;
+}
+
+.navbar p {
+  margin: 5px 0 0;
+  color: #cccccc;
+  font-size: 22px;
+}
