@@ -1,0 +1,61 @@
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 1; /* Ensure it's not hidden */
+  visibility: visible; /* Ensure it's visible */
+  z-index: 1000; /* Make sure it's above other content */
+}
+
+.add-esp32-modal {
+  background: #333;
+  padding: 20px;
+  border-radius: 10px;
+  color: white;
+  width: 300px;
+  transform: translateY(0) scale(1); /* Ensure it's not scaled down */
+  opacity: 1;
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+
+.modal-overlay.modal-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s;
+}
+
+.add-esp32-modal, .edit-device-modal {
+  background: #333;
+  padding: 20px;
+  border-radius: 10px;
+  color: white;
+  width: 300px;
+  transform: translateY(-50px) scale(0.9);
+  opacity: 0;
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.modal-overlay.modal-open .add-esp32-modal,
+.modal-overlay.modal-open .edit-device-modal {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* Improved Buttons */
+.modal-buttons button[type="submit"] {
+  background-color: #4fd1c5;
+  color: #1a1a1a;
+}
+
+.modal-buttons button[type="button"] {
+  background-color: #718096;
+  color: white;
+}

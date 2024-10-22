@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import DeviceCard from './components/DeviceCard';
-import AddESP32Modal from './components/AddESP32Form';
-import NotificationList from './components/NotificationList';
+import AddESP32Modal from './components/AddESP32Modal';
 import EditDeviceModal from './components/EditDeviceModal';
+import NotificationList from './components/NotificationList';
 import { Bell } from 'lucide-react';
 import './App.css';
 
@@ -11,14 +11,13 @@ export default function App() {
   const [error, setError] = useState(null);
   const [serverStatus, setServerStatus] = useState('offline');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [deviceToDelete, setDeviceToDelete] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [editDevice, setEditDevice] = useState(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [deviceToDelete, setDeviceToDelete] = useState(null);
 
   useEffect(() => {
-    // Fetch devices and server status on mount
     fetchDevices();
     checkServerStatus();
   }, []);
@@ -30,7 +29,10 @@ export default function App() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setDevices(data);
+      const uniqueDevices = data.filter((device, index, self) =>
+        index === self.findIndex((d) => d.name === device.name && d.ip === device.ip)
+      );
+      setDevices(uniqueDevices);
     } catch (error) {
       setError('Failed to fetch devices');
     }
@@ -49,52 +51,29 @@ export default function App() {
     }
   };
 
-  const addNotification = (message) => {
-    const id = Date.now();
-    setNotifications((prevNotifications) => [
-      ...prevNotifications,
-      { id, message },
-    ]);
-  };
-
-  const addDevice = async (device) => {
+  const addDevice = async (name, ip) => {
     try {
       const response = await fetch('http://localhost:5001/api/devices', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(device)
+        body: JSON.stringify({ name, ip })
       });
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const newDevice = await response.json();
-      setDevices([...devices, newDevice]);
-    } catch (error) {
-      setError('Failed to add device');
-    }
-  };
+      const deviceExists = devices.some(device => device.name === newDevice.name && device.ip === newDevice.ip);
 
-  const deleteDevice = async (deviceId) => {
-    try {
-      const response = await fetch(`http://localhost:5001/api/devices/${deviceId}`, {
-        method: 'DELETE'
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!deviceExists) {
+        setDevices((prevDevices) => [...prevDevices, newDevice]);
       }
-      setDevices(devices.filter(device => device._id !== deviceId));
-    } catch (error) {
-      setError('Failed to delete device');
-    }
-  };
 
-  const confirmDelete = () => {
-    if (deviceToDelete) {
-      deleteDevice(deviceToDelete);
-      setShowConfirmation(false);
-      setDeviceToDelete(null);
+    } catch (error) {
+      setError('Failed to add device. Please try again.');
     }
   };
 
@@ -119,8 +98,11 @@ export default function App() {
     }
   };
 
-  const handleClearNotifications = () => {
-    setNotifications([]);
+  const addNotification = (message) => {
+    setNotifications((prevNotifications) => [
+      ...prevNotifications,
+      { id: Date.now(), message },
+    ]);
   };
 
   return (
@@ -129,15 +111,21 @@ export default function App() {
       <h2 className="subtitle">ESP32 Monitoring System</h2>
       <div className="main-content">
         <div className="content-header">
-          <button onClick={() => setIsModalOpen(true)} className="add-device-btn">Add ESP32</button>
-          <div className={`server-status ${serverStatus}`}>
-            Server Status
-            <span className="status-indicator"></span>
+        <button onClick={() => {
+          console.log("Opening Modal");
+          setIsModalOpen(true);
+        }} className="add-device-btn">Add ESP32</button>
+
+          <div className="notification-section">
+            <button onClick={() => setShowNotifications(!showNotifications)} className="notification-btn">
+              <Bell size={24} />
+              {notifications.length > 0 && <span className="notification-badge">{notifications.length}</span>}
+            </button>
+            <div className={`server-status ${serverStatus}`}>
+              Server Status: {serverStatus}
+              <span className="status-indicator"></span>
+            </div>
           </div>
-          <button onClick={() => setShowNotifications(!showNotifications)} className="notification-btn">
-            <Bell size={24} />
-            {notifications.length > 0 && <span className="notification-badge">{notifications.length}</span>}
-          </button>
         </div>
         {error && <p className="error">{error}</p>}
         <div className="device-container">
@@ -153,7 +141,7 @@ export default function App() {
                       setDeviceToDelete(id);
                     }}
                     onEdit={() => setEditDevice(device)}
-                    addNotification={addNotification} 
+                    addNotification={addNotification} // Pass addNotification as a prop
                   />
                 ))
               ) : (
@@ -167,13 +155,6 @@ export default function App() {
           onClose={() => setIsModalOpen(false)} 
           onAdd={addDevice} 
         />
-        {showConfirmation && (
-          <div className="confirmation-modal show">
-            <p>Are you sure you want to remove this device?</p>
-            <button onClick={confirmDelete}>Yes</button>
-            <button onClick={() => setShowConfirmation(false)}>No</button>
-          </div>
-        )}
         {editDevice && (
           <EditDeviceModal
             device={editDevice}
@@ -186,7 +167,7 @@ export default function App() {
         <NotificationList 
           notifications={notifications} 
           onClose={() => setShowNotifications(false)}
-          onClear={handleClearNotifications}
+          onClear={() => setNotifications([])}
         />
       )}
     </div>

@@ -79,7 +79,7 @@ const DeviceCard = ({ device, onDelete, onEdit, addNotification }) => {
       )}
       {showFullModal && (
         <div className="full-modal">
-          <p>One or more trash bins are full!</p>
+          <p>One or more bins are full!</p>
           <button onClick={() => setShowFullModal(false)}>Close</button>
         </div>
       )}
@@ -88,4 +88,3 @@ const DeviceCard = ({ device, onDelete, onEdit, addNotification }) => {
 };
 
 export default DeviceCard;
-
