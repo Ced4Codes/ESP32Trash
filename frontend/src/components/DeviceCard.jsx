@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEdit} from 'react-icons/fa';
 import './DeviceCard.css';
 
 const DeviceCard = ({ device, onDelete, onEdit, addNotification }) => {

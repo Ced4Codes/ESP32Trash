@@ -29,17 +29,24 @@ app.get('/api/devices', async (req, res) => {
 app.post('/api/devices', async (req, res) => {
   try {
     const { name, ip, trashBins } = req.body;
+
+    // Check if a device with the same name or IP exists
     const existingDevice = await Device.findOne({ $or: [{ name }, { ip }] });
 
     if (existingDevice) {
-      return res.status(400).json({ message: 'Device with the same name or IP already exists' });
+      // If a device exists, update its trashBins data
+      existingDevice.trashBins = trashBins;
+      await existingDevice.save();
+      return res.status(200).json({ message: 'Device updated successfully', device: existingDevice });
     }
 
+    // If no device exists, create a new one
     const newDevice = new Device({ name, ip, trashBins });
     await newDevice.save();
     res.status(201).json(newDevice);
+
   } catch (error) {
-    res.status(400).json({ message: 'Error adding device', error: error.message });
+    res.status(400).json({ message: 'Error adding or updating device', error: error.message });
   }
 });
 
