@@ -17,6 +17,7 @@ mongoose.connect('mongodb://localhost:27017/esp32_monitoring', {
 .then(() => console.log('Connected to MongoDB'))
 .catch((err) => console.error('MongoDB connection error:', err));
 
+// Get all devices
 app.get('/api/devices', async (req, res) => {
   try {
     const devices = await Device.find().sort({ name: 1 });
@@ -26,22 +27,32 @@ app.get('/api/devices', async (req, res) => {
   }
 });
 
+// Add or update device
 app.post('/api/devices', async (req, res) => {
   try {
-    const { name, ip, trashBins } = req.body;
+    const { ip, trashBins } = req.body;
 
-    // Check if a device with the same name or IP exists
-    const existingDevice = await Device.findOne({ $or: [{ name }, { ip }] });
+    // Check if a device with the same IP exists
+    const existingDevice = await Device.findOne({ ip });
 
     if (existingDevice) {
-      // If a device exists, update its trashBins data
-      existingDevice.trashBins = trashBins;
+      // If the device exists, update the trash bins based on the addTrash and full flags
+      for (let bin in trashBins) {
+        const binData = trashBins[bin];
+
+        if (binData.addTrash) {
+          existingDevice.trashBins[bin].count += 1;  // Increment the count
+        }
+
+        existingDevice.trashBins[bin].full = binData.full;  // Update the full status
+        existingDevice.trashBins[bin].addTrash = false;  // Reset the addTrash flag
+      }
       await existingDevice.save();
       return res.status(200).json({ message: 'Device updated successfully', device: existingDevice });
     }
 
     // If no device exists, create a new one
-    const newDevice = new Device({ name, ip, trashBins });
+    const newDevice = new Device({ ip, trashBins });
     await newDevice.save();
     res.status(201).json(newDevice);
 
@@ -50,29 +61,44 @@ app.post('/api/devices', async (req, res) => {
   }
 });
 
-app.put('/api/devices/:id', async (req, res) => {
+// Update device by IP
+app.put('/api/devices', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, ip, trashBins } = req.body;
+    const { ip, trashBins } = req.body;
 
-    const existingDevice = await Device.findOne({ $or: [{ name }, { ip }], _id: { $ne: id } });
+    // Find the existing device by IP address
+    const existingDevice = await Device.findOne({ ip });
 
-    if (existingDevice) {
-      return res.status(400).json({ message: 'Device with the same name or IP already exists' });
-    }
-
-    const updatedDevice = await Device.findByIdAndUpdate(id, { name, ip, trashBins }, { new: true });
-
-    if (!updatedDevice) {
+    if (!existingDevice) {
       return res.status(404).json({ message: 'Device not found' });
     }
 
-    res.json(updatedDevice);
+    // Update the trash bins based on the addTrash and full flags
+    for (let bin in trashBins) {
+      if (existingDevice.trashBins.hasOwnProperty(bin)) {
+        const binData = trashBins[bin];
+
+        if (binData.addTrash) {
+          existingDevice.trashBins[bin].count += 1;  // Increment the count
+        }
+
+        existingDevice.trashBins[bin].full = binData.full;  // Update the full status
+        existingDevice.trashBins[bin].addTrash = false;  // Reset the addTrash flag
+      } else {
+        console.warn(`Bin ${bin} does not exist in the existing device. Skipping update for this bin.`);
+      }
+    }
+
+    await existingDevice.save();
+    res.status(200).json({ message: 'Device updated successfully', device: existingDevice });
+
   } catch (error) {
     res.status(400).json({ message: 'Error updating device', error: error.message });
   }
 });
 
+
+// Delete device by ID
 app.delete('/api/devices/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -86,6 +112,7 @@ app.delete('/api/devices/:id', async (req, res) => {
   }
 });
 
+// Status endpoint
 app.get('/api/status', (req, res) => {
   res.json({ status: 'online' });
 });

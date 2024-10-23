@@ -2,17 +2,17 @@ const express = require('express');
 const router = express.Router();
 const Device = require('../models/Device'); // Adjust the path if necessary
 
-// GET /api/devices - Get all devices
+// GET /api/devices - Fetch all devices
 router.get('/', async (req, res) => {
   try {
     const devices = await Device.find();
     res.status(200).json(devices);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching devices' });
+    res.status(500).json({ message: 'Error fetching devices', error: error.message });
   }
 });
 
-// DELETE /api/devices/:id - Delete a device by id
+// DELETE /api/devices/:id - Delete a device by ID
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;

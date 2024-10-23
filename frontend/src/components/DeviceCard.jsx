@@ -56,18 +56,21 @@ const DeviceCard = ({ device, onDelete, onEdit, addNotification }) => {
       </div>
       <p>{ip || 'No IP Address'}</p>
       <div className="trash-bins">
-        <h3>Trash Bins</h3>
-        <div className="bin-buttons">
-          {Object.entries(bins).map(([type, value]) => (
-            <span
-              key={type}
-              className={`bin-button ${type.toLowerCase()} ${isBinFull(value) ? 'full' : ''}`}
-            >
-              {type} | {isBinFull(value) ? <span className="flashing">FULL</span> : value}
-            </span>
-          ))}
-        </div>
-      </div>
+  <h3>Trash Bins</h3>
+  <div className="bin-buttons">
+    {Object.entries(bins).map(([type, value]) => {
+      const displayValue = typeof value === 'object' && value !== null ? value.full : value;
+      return (
+        <span
+          key={type}
+          className={`bin-button ${type.toLowerCase()} ${isBinFull(displayValue) ? 'full' : ''}`}
+        >
+          {type} | {isBinFull(displayValue) ? <span className="flashing">FULL</span> : displayValue}
+        </span>
+      );
+    })}
+  </div>
+</div>
       {!isOnline && (
         <div className="offline-overlay">
           <p>ESP32 Down</p>
