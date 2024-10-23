@@ -157,7 +157,7 @@ export default function App() {
                       setDeviceToDelete(id);
                     }}
                     onEdit={() => setEditDevice(device)}
-                    addNotification={addNotification} // Pass addNotification as a prop
+                    addNotification={addNotification}
                   />
                 ))
               ) : (
@@ -171,7 +171,7 @@ export default function App() {
             device={editDevice}
             onClose={() => setEditDevice(null)}
             onSave={editDeviceInfo}
-            onDelete={handleDeleteDevice} // Pass handleDeleteDevice to EditDeviceModal
+            onDelete={handleDeleteDevice}
           />
         )}
       </div>

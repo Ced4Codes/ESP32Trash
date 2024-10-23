@@ -29,8 +29,8 @@ body {
 }
 
 .main-content {
-  width: 1600px;  /* Fixed width */
-  height: 650px;  /* Fixed height */
+  width: 1600px;
+  height: 650px;
   flex-shrink: 0;
   border-radius: 20px;
   padding: 30px;
@@ -40,7 +40,21 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow: hidden;  /* Prevent overflow */
+  overflow: hidden;
+  animation: slideUpZoom 0.8s ease-out forwards;
+  opacity: 0;
+  transform: translateY(50px) scale(0.9);
+}
+
+@keyframes slideUpZoom {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .content-header {
@@ -49,6 +63,9 @@ body {
   align-items: center;
   width: 100%;
   margin-bottom: 20px;
+  opacity: 0;
+  animation: popIn 0.5s ease-out forwards;
+  animation-delay: 0.4s;
 }
 
 .add-device-btn {
@@ -111,31 +128,39 @@ body {
 .device-container {
   flex-grow: 1;
   width: 100%;
-  overflow: hidden; /* Prevent overflow */
+  overflow: hidden;
+  opacity: 0;
+  animation: popIn 0.5s ease-out forwards;
+  animation-delay: 0.6s;
 }
 
 .device-scroll-area {
-  height: calc(100% - 40px); /* Adjust height for header */
-  overflow-x: auto;  /* Horizontal scrolling */
+  height: calc(100% - 40px);
+  overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
-  padding-bottom: 15px; /* Space for scrollbar */
+  padding-bottom: 15px;
+  opacity: 0;
+  animation: popIn 0.5s ease-out forwards;
+  animation-delay: 0.8s;
 }
 
 .device-grid {
-  display: grid; /* Use grid layout */
-  grid-template-columns: repeat( 10, minmax(300px, 1fr)); /* Adjust columns for responsiveness */
-  grid-template-rows: repeat(2, auto); /* Two rows */
-  grid-gap: 10px; /* Add some gap between cards */
-  width: max-content; /* Ensure grid is wide enough to enable horizontal scroll */
+  display: grid;
+  grid-template-columns: repeat(10, minmax(300px, 1fr));
+  grid-template-rows: repeat(2, auto);
+  grid-gap: 10px;
+  width: max-content;
 }
 
 .device-grid > * {
-  width: 300px; /* Fixed width for each device card */
-  margin: 5px; /* Add some margin for spacing */
+  width: 300px;
+  margin: 5px;
+  opacity: 0;
+  animation: popIn 0.5s ease-out forwards;
+  animation-delay: 1s;
 }
 
-/* Modern, minimalist scrollbar */
 .device-scroll-area::-webkit-scrollbar {
   height: 8px;
 }
@@ -154,7 +179,6 @@ body {
   background-color: rgba(255, 255, 255, 0.5);
 }
 
-
 .error {
   color: #F44336;
   background-color: rgba(244, 67, 54, 0.1);
@@ -167,4 +191,18 @@ body {
   text-align: center;
   font-style: italic;
   color: #cccccc;
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  70% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
