@@ -52,9 +52,6 @@ const DeviceCard = ({ device, onDelete, onEdit, addNotification }) => {
           <button onClick={() => onEdit(device)} className="edit-icon" aria-label="Edit device">
             <FaEdit />
           </button>
-          <button onClick={() => onDelete(_id)} className="remove-icon" aria-label="Remove device">
-            <FaTrash />
-          </button>
         </div>
       </div>
       <p>{ip || 'No IP Address'}</p>
