@@ -29,6 +29,12 @@ app.get('/api/devices', async (req, res) => {
 app.post('/api/devices', async (req, res) => {
   try {
     const { name, ip, trashBins } = req.body;
+    const existingDevice = await Device.findOne({ $or: [{ name }, { ip }] });
+
+    if (existingDevice) {
+      return res.status(400).json({ message: 'Device with the same name or IP already exists' });
+    }
+
     const newDevice = new Device({ name, ip, trashBins });
     await newDevice.save();
     res.status(201).json(newDevice);
@@ -40,11 +46,20 @@ app.post('/api/devices', async (req, res) => {
 app.put('/api/devices/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, ip } = req.body;
-    const updatedDevice = await Device.findByIdAndUpdate(id, { name, ip }, { new: true });
+    const { name, ip, trashBins } = req.body;
+
+    const existingDevice = await Device.findOne({ $or: [{ name }, { ip }], _id: { $ne: id } });
+
+    if (existingDevice) {
+      return res.status(400).json({ message: 'Device with the same name or IP already exists' });
+    }
+
+    const updatedDevice = await Device.findByIdAndUpdate(id, { name, ip, trashBins }, { new: true });
+
     if (!updatedDevice) {
       return res.status(404).json({ message: 'Device not found' });
     }
+
     res.json(updatedDevice);
   } catch (error) {
     res.status(400).json({ message: 'Error updating device', error: error.message });

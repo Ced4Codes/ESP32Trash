@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const deviceSchema = new mongoose.Schema({
-  name: String,
-  ip: String,
+  name: { type: String, unique: true },
+  ip: { type: String, unique: true },
   trashBins: {
     Bio: Number,
     Plastic: Number,
@@ -14,3 +14,4 @@ const deviceSchema = new mongoose.Schema({
 const Device = mongoose.model('Device', deviceSchema);
 
 module.exports = Device;
+

@@ -7,7 +7,6 @@ const DeviceCard = ({ device, onDelete, onEdit, addNotification }) => {
   const [isOnline, setIsOnline] = useState(true);
   const [showFullModal, setShowFullModal] = useState(false);
 
-  // Check if the device is online or offline
   const checkDeviceStatus = useCallback(async () => {
     try {
       const response = await fetch(`http://${ip}/status`);
@@ -25,8 +24,8 @@ const DeviceCard = ({ device, onDelete, onEdit, addNotification }) => {
   }, [ip, isOnline, name, _id, addNotification]);
 
   useEffect(() => {
-    const interval = setInterval(checkDeviceStatus, 10000); // Check every 10 seconds
-    return () => clearInterval(interval); // Clean up the interval on unmount
+    const interval = setInterval(checkDeviceStatus, 10000);
+    return () => clearInterval(interval);
   }, [checkDeviceStatus]);
 
   const defaultBins = useMemo(() => ({

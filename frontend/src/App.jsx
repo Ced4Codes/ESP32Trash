@@ -58,22 +58,18 @@ export default function App() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, ip })
+        body: JSON.stringify({ name, ip, trashBins: { Bio: 0, Plastic: 0, Metal: 0, Others: 0 } })
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
       const newDevice = await response.json();
-      const deviceExists = devices.some(device => device.name === newDevice.name && device.ip === newDevice.ip);
-
-      if (!deviceExists) {
-        setDevices((prevDevices) => [...prevDevices, newDevice]);
-      }
-
+      setDevices((prevDevices) => [...prevDevices, newDevice]);
     } catch (error) {
-      setError('Failed to add device. Please try again.');
+      setError(error.message || 'Failed to add device. Please try again.');
     }
   };
 
@@ -86,15 +82,35 @@ export default function App() {
         },
         body: JSON.stringify(updatedDevice)
       });
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
+
       const updatedDevices = devices.map(device =>
         device._id === updatedDevice._id ? updatedDevice : device
       );
       setDevices(updatedDevices);
     } catch (error) {
-      setError('Failed to update device');
+      setError(error.message || 'Failed to update device');
+    }
+  };
+
+  const handleDeleteDevice = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/devices/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      setDevices((prevDevices) => prevDevices.filter(device => device._id !== id));
+    } catch (error) {
+      setError(error.message || 'Failed to delete device. Please try again.');
     }
   };
 
@@ -105,29 +121,16 @@ export default function App() {
     ]);
   };
 
-  const handleDeleteDevice = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:5001/api/devices/${id}`, {
-        method: 'DELETE'
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      setDevices(devices.filter(device => device._id !== id));
-      setShowConfirmation(false);
-      setDeviceToDelete(null);
-    } catch (error) {
-      setError('Failed to delete device');
-    }
-  };
-
   return (
     <div className="app">
       <h1 className="title">EcoCycle</h1>
       <h2 className="subtitle">ESP32 Monitoring System</h2>
       <div className="main-content">
         <div className="content-header">
-          <button onClick={() => setIsModalOpen(true)} className="add-device-btn">Add ESP32</button>
+          <button onClick={() => {
+            console.log("Opening Modal");
+            setIsModalOpen(true);
+          }} className="add-device-btn">Add ESP32</button>
 
           <div className="notification-section">
             <button onClick={() => setShowNotifications(!showNotifications)} className="notification-btn">
@@ -168,6 +171,7 @@ export default function App() {
             device={editDevice}
             onClose={() => setEditDevice(null)}
             onSave={editDeviceInfo}
+            onDelete={handleDeleteDevice} // Pass handleDeleteDevice to EditDeviceModal
           />
         )}
       </div>
@@ -182,13 +186,6 @@ export default function App() {
           onClose={() => setShowNotifications(false)}
           onClear={() => setNotifications([])}
         />
-      )}
-      {showConfirmation && (
-        <div className="confirmation-modal">
-          <p>Are you sure you want to delete this device?</p>
-          <button onClick={() => handleDeleteDevice(deviceToDelete)}>Yes</button>
-          <button onClick={() => setShowConfirmation(false)}>No</button>
-        </div>
       )}
     </div>
   );
