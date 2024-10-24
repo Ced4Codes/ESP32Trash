@@ -21,7 +21,7 @@ export default function App() {
   useEffect(() => {
     fetchDevices();
     checkServerStatus();
-    const interval = setInterval(checkServerStatus, 30000); // Check every 30 seconds
+    const interval = setInterval(checkServerStatus, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -33,7 +33,7 @@ export default function App() {
       }
       const data = await response.json();
       setDevices(data);
-      console.log('Fetched devices:', data); // Log the fetched data
+      console.log('Fetched devices:', data);
     } catch (error) {
       console.error('Error fetching devices:', error);
       setError('Failed to fetch devices. Please check your server connection.');
@@ -64,7 +64,16 @@ export default function App() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, ip, trashBins: { Bio: 0, Plastic: 0, Metal: 0, Others: 0 } })
+        body: JSON.stringify({ 
+          name, 
+          ip, 
+          trashBins: { 
+            Bio: { count: 0, full: false, addTrash: false },
+            Plastic: { count: 0, full: false, addTrash: false },
+            Metal: { count: 0, full: false, addTrash: false },
+            Others: { count: 0, full: false, addTrash: false }
+          } 
+        })
       });
 
       if (!response.ok) {
@@ -161,8 +170,10 @@ export default function App() {
             <DeviceCard
               key={device._id}
               device={device}
-              onEdit={() => {
-                setEditDevice(device);
+              onEdit={() => setEditDevice(device)}
+              onDelete={(id) => {
+                setDeviceToDelete(id);
+                setShowConfirmation(true);
               }}
               addNotification={addNotification}
             />

@@ -29,7 +29,16 @@ app.get('/api/devices', async (req, res) => {
 
 app.post('/api/devices', async (req, res) => {
   try {
-    const { name, ip, trashBins } = req.body;
+    const { name, ip } = req.body;
+    
+    // Create the trashBins object with the correct structure
+    const trashBins = {
+      Bio: { count: 0, full: false, addTrash: false },
+      Plastic: { count: 0, full: false, addTrash: false },
+      Metal: { count: 0, full: false, addTrash: false },
+      Others: { count: 0, full: false, addTrash: false }
+    };
+
     const newDevice = new Device({ name, ip, trashBins });
     await newDevice.save();
     res.status(201).json(newDevice);

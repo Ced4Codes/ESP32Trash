@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { FaEdit} from 'react-icons/fa';
+import { FaEdit } from 'react-icons/fa';
 import './DeviceCard.css';
 
 const DeviceCard = ({ device, onDelete, onEdit, addNotification }) => {
@@ -29,15 +29,15 @@ const DeviceCard = ({ device, onDelete, onEdit, addNotification }) => {
   }, [checkDeviceStatus]);
 
   const defaultBins = useMemo(() => ({
-    Bio: 0,
-    Plastic: 0,
-    Metal: 0,
-    Others: 0,
+    Bio: { count: 0, full: false, addTrash: false },
+    Plastic: { count: 0, full: false, addTrash: false },
+    Metal: { count: 0, full: false, addTrash: false },
+    Others: { count: 0, full: false, addTrash: false },
   }), []);
 
   const bins = useMemo(() => ({ ...defaultBins, ...trashBins }), [defaultBins, trashBins]);
 
-  const isBinFull = useCallback((value) => value === 'FULL' || value >= 100, []);
+  const isBinFull = useCallback((bin) => bin.full || bin.count >= 100, []);
 
   useEffect(() => {
     const fullBins = Object.values(bins).filter(isBinFull);
@@ -56,21 +56,18 @@ const DeviceCard = ({ device, onDelete, onEdit, addNotification }) => {
       </div>
       <p>{ip || 'No IP Address'}</p>
       <div className="trash-bins">
-  <h3>Trash Bins</h3>
-  <div className="bin-buttons">
-    {Object.entries(bins).map(([type, value]) => {
-      const displayValue = typeof value === 'object' && value !== null ? value.full : value;
-      return (
-        <span
-          key={type}
-          className={`bin-button ${type.toLowerCase()} ${isBinFull(displayValue) ? 'full' : ''}`}
-        >
-          {type} | {isBinFull(displayValue) ? <span className="flashing">FULL</span> : displayValue}
-        </span>
-      );
-    })}
-  </div>
-</div>
+        <h3>Trash Bins</h3>
+        <div className="bin-buttons">
+          {Object.entries(bins).map(([type, bin]) => (
+            <span
+              key={type}
+              className={`bin-button ${type.toLowerCase()} ${isBinFull(bin) ? 'full' : ''}`}
+            >
+              {type} | {isBinFull(bin) ? <span className="flashing">FULL</span> : bin.count}
+            </span>
+          ))}
+        </div>
+      </div>
       {!isOnline && (
         <div className="offline-overlay">
           <p>ESP32 Down</p>

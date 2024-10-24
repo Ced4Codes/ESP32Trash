@@ -1,16 +1,28 @@
 import React, { useState } from 'react';
 import './AddESP32Modal.css';
 
-const AddESP32Modal = ({ isOpen, onClose, onAdd }) => {
+export default function AddESP32Modal({ isOpen, onClose, onAdd }) {
   const [name, setName] = useState('');
   const [ip, setIp] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onAdd(name, ip);
-    setName('');
-    setIp('');
-    onClose();
+    setError('');
+
+    try {
+      await onAdd(name, ip);
+      setName('');
+      setIp('');
+      onClose();
+    } catch (error) {
+      setError(error.message || 'Failed to add device. Please try again.');
+      // Do not close the modal here
+    }
+  };
+
+  const handleErrorAcknowledge = () => {
+    setError('');
   };
 
   if (!isOpen) return null;
@@ -19,6 +31,12 @@ const AddESP32Modal = ({ isOpen, onClose, onAdd }) => {
     <div className="modal-overlay">
       <div className="add-esp32-modal">
         <h2>Add New ESP32</h2>
+        {error && (
+          <div className="error-container">
+            <p className="error-message">{error}</p>
+            <button type="button" onClick={handleErrorAcknowledge} className="error-ok-btn">OK</button>
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="name">Name:</label>
@@ -38,6 +56,8 @@ const AddESP32Modal = ({ isOpen, onClose, onAdd }) => {
               value={ip}
               onChange={(e) => setIp(e.target.value)}
               required
+              pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+              title="Please enter a valid IP address"
             />
           </div>
           <div className="button-group">
@@ -48,6 +68,4 @@ const AddESP32Modal = ({ isOpen, onClose, onAdd }) => {
       </div>
     </div>
   );
-};
-
-export default AddESP32Modal;
+}
