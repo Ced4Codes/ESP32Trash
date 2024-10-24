@@ -5,18 +5,21 @@ const bodyParser = require('body-parser');
 const Device = require('./models/Device');
 
 const app = express();
-const port = 5001;
+const port = process.env.PORT || 5001;
 
+// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
+// MongoDB connection
 mongoose.connect('mongodb://localhost:27017/esp32_monitoring', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('Connected to MongoDB'))
-.catch((err) => console.error('MongoDB connection error:', err));
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
+// Routes
 app.get('/api/devices', async (req, res) => {
   try {
     const devices = await Device.find();
@@ -30,7 +33,7 @@ app.get('/api/devices', async (req, res) => {
 app.post('/api/devices', async (req, res) => {
   try {
     const { name, ip } = req.body;
-    
+
     // Create the trashBins object with the correct structure
     const trashBins = {
       Bio: { count: 0, full: false, addTrash: false },
@@ -39,9 +42,16 @@ app.post('/api/devices', async (req, res) => {
       Others: { count: 0, full: false, addTrash: false }
     };
 
-    const newDevice = new Device({ name, ip, trashBins });
-    await newDevice.save();
-    res.status(201).json(newDevice);
+    let device = await Device.findOne({ ip });
+
+    if (device) {
+      console.log("IP Address is already assigned to a Device. Sending Data to that Device.");
+      res.status(200).json({ message: "IP Address is already assigned to a Device. Sending Data to that Device." });
+    } else {
+      const newDevice = new Device({ name, ip, trashBins });
+      await newDevice.save();
+      res.status(201).json(newDevice);
+    }
   } catch (error) {
     console.error('Error adding device:', error);
     res.status(400).json({ message: 'Error adding device', error: error.message });
@@ -77,10 +87,12 @@ app.delete('/api/devices/:id', async (req, res) => {
   }
 });
 
+// Status route
 app.get('/api/status', (req, res) => {
   res.json({ status: 'online' });
 });
 
+// Start the server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

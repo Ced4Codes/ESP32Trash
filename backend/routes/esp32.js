@@ -15,10 +15,10 @@ router.get('/', async (req, res) => {
 // POST /api/esp32 - Create or update an ESP32 device by IP
 router.post('/', async (req, res) => {
   const { name, ip, timesFull } = req.body;
-  
+
   try {
     const updatedDevice = await Esp32.findOneAndUpdate(
-      { ip }, 
+      { ip },
       { name, timesFull, lastUpdated: Date.now() }, // Update fields
       { new: true, upsert: true } // Upsert if it doesn't exist
     );

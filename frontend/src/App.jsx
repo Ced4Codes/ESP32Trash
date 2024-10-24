@@ -86,18 +86,26 @@ export default function App() {
       addNotification(`Device ${name} added successfully`);
     } catch (error) {
       console.error('Error adding device:', error);
-      setError(error.message || 'Failed to add device. Please try again.');
+      throw error; // Re-throw the error to be caught in the AddESP32Modal component
     }
   };
 
-  const editDeviceInfo = async (updatedDevice) => {
+  const addNotification = (message) => {
+    const newNotification = {
+      id: new Date().getTime(),
+      message,
+    };
+    setNotifications((prevNotifications) => [...prevNotifications, newNotification]);
+  };
+
+  const editDeviceInfo = async (id, updatedInfo) => {
     try {
-      const response = await fetch(`http://localhost:5001/api/devices/${updatedDevice._id}`, {
+      const response = await fetch(`http://localhost:5001/api/devices/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(updatedDevice)
+        body: JSON.stringify(updatedInfo)
       });
 
       if (!response.ok) {
@@ -105,14 +113,14 @@ export default function App() {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
-      const updatedDevices = devices.map(device =>
-        device._id === updatedDevice._id ? updatedDevice : device
+      const updatedDevice = await response.json();
+      setDevices((prevDevices) => 
+        prevDevices.map((device) => (device._id === id ? updatedDevice : device))
       );
-      setDevices(updatedDevices);
       addNotification(`Device ${updatedDevice.name} updated successfully`);
     } catch (error) {
       console.error('Error updating device:', error);
-      setError(error.message || 'Failed to update device');
+      setError('Failed to update device. Please try again.');
     }
   };
 
@@ -127,19 +135,12 @@ export default function App() {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
-      setDevices((prevDevices) => prevDevices.filter(device => device._id !== id));
+      setDevices((prevDevices) => prevDevices.filter((device) => device._id !== id));
       addNotification('Device deleted successfully');
     } catch (error) {
       console.error('Error deleting device:', error);
-      setError(error.message || 'Failed to delete device. Please try again.');
+      setError('Failed to delete device. Please try again.');
     }
-  };
-
-  const addNotification = (message) => {
-    setNotifications((prevNotifications) => [
-      ...prevNotifications,
-      { id: Date.now(), message },
-    ]);
   };
 
   return (
@@ -148,10 +149,7 @@ export default function App() {
       <h2 className="subtitle">ESP32 Monitoring System</h2>
       <div className="main-content">
         <div className="content-header">
-          <button onClick={() => {
-            console.log("Opening Modal");
-            setIsModalOpen(true);
-          }} className="add-device-btn">Add ESP32</button>
+          <button onClick={() => setIsModalOpen(true)} className="add-device-btn">Add ESP32</button>
 
           <div className="notification-section">
             <button onClick={() => setShowNotifications(!showNotifications)} className="notification-btn">
@@ -164,20 +162,24 @@ export default function App() {
             </div>
           </div>
         </div>
-        {error && <p className="error-message">{error}</p>}
-        <div className="device-grid">
-          {devices.map((device) => (
-            <DeviceCard
-              key={device._id}
-              device={device}
-              onEdit={() => setEditDevice(device)}
-              onDelete={(id) => {
-                setDeviceToDelete(id);
-                setShowConfirmation(true);
-              }}
-              addNotification={addNotification}
-            />
-          ))}
+        {error && <p className="error">{error}</p>}
+        <div className="device-container">
+          <div className="device-scroll-area">
+            <div className="device-grid">
+              {devices.map((device) => (
+                <DeviceCard
+                  key={device._id}
+                  device={device}
+                  onEdit={() => setEditDevice(device)}
+                  onDelete={(id) => {
+                    setDeviceToDelete(id);
+                    setShowConfirmation(true);
+                  }}
+                  addNotification={addNotification}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
       {showNotifications && (

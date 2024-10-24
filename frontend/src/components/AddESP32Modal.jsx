@@ -17,12 +17,7 @@ export default function AddESP32Modal({ isOpen, onClose, onAdd }) {
       onClose();
     } catch (error) {
       setError(error.message || 'Failed to add device. Please try again.');
-      // Do not close the modal here
     }
-  };
-
-  const handleErrorAcknowledge = () => {
-    setError('');
   };
 
   if (!isOpen) return null;
@@ -34,7 +29,6 @@ export default function AddESP32Modal({ isOpen, onClose, onAdd }) {
         {error && (
           <div className="error-container">
             <p className="error-message">{error}</p>
-            <button type="button" onClick={handleErrorAcknowledge} className="error-ok-btn">OK</button>
           </div>
         )}
         <form onSubmit={handleSubmit}>

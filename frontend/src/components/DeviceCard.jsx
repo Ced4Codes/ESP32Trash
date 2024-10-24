@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FaEdit } from 'react-icons/fa';
-import './DeviceCard.css';
+import './DeviceCard.css'; // Ensure you have this CSS file or place the CSS in your main stylesheet
 
 const DeviceCard = ({ device, onDelete, onEdit, addNotification }) => {
   const { _id, name, ip, trashBins = {} } = device;
@@ -29,10 +29,10 @@ const DeviceCard = ({ device, onDelete, onEdit, addNotification }) => {
   }, [checkDeviceStatus]);
 
   const defaultBins = useMemo(() => ({
-    Bio: { count: 0, full: false, addTrash: false },
-    Plastic: { count: 0, full: false, addTrash: false },
-    Metal: { count: 0, full: false, addTrash: false },
-    Others: { count: 0, full: false, addTrash: false },
+    Bio: { count: 0, full: false },
+    Plastic: { count: 0, full: false },
+    Metal: { count: 0, full: false },
+    Others: { count: 0, full: false },
   }), []);
 
   const bins = useMemo(() => ({ ...defaultBins, ...trashBins }), [defaultBins, trashBins]);
@@ -74,7 +74,7 @@ const DeviceCard = ({ device, onDelete, onEdit, addNotification }) => {
         </div>
       )}
       {showFullModal && (
-        <div className="full-modal">
+        <div className={`full-modal ${showFullModal ? 'show' : ''}`}>
           <p>One or more bins are full!</p>
           <button onClick={() => setShowFullModal(false)}>Close</button>
         </div>
