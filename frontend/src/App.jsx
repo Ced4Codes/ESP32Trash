@@ -3,6 +3,7 @@ import DeviceCard from './components/DeviceCard';
 import AddESP32Modal from './components/AddESP32Modal';
 import EditDeviceModal from './components/EditDeviceModal';
 import NotificationList from './components/NotificationList';
+import ConfirmationModal from './components/ConfirmationModal';
 import { Bell } from 'lucide-react';
 import './App.css';
 
@@ -20,6 +21,8 @@ export default function App() {
   useEffect(() => {
     fetchDevices();
     checkServerStatus();
+    const interval = setInterval(checkServerStatus, 30000); // Check every 30 seconds
+    return () => clearInterval(interval);
   }, []);
 
   const fetchDevices = async () => {
@@ -29,12 +32,12 @@ export default function App() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      const uniqueDevices = data.filter((device, index, self) =>
-        index === self.findIndex((d) => d.name === device.name && d.ip === device.ip)
-      );
-      setDevices(uniqueDevices);
+      setDevices(data);
+      console.log('Fetched devices:', data); // Log the fetched data
     } catch (error) {
-      setError('Failed to fetch devices');
+      console.error('Error fetching devices:', error);
+      setError('Failed to fetch devices. Please check your server connection.');
+      setServerStatus('offline');
     }
   };
 
@@ -43,11 +46,14 @@ export default function App() {
       const response = await fetch('http://localhost:5001/api/status');
       if (response.ok) {
         setServerStatus('online');
+        setError(null);
       } else {
-        setServerStatus('offline');
+        throw new Error('Server is not responding correctly');
       }
     } catch (error) {
+      console.error('Error checking server status:', error);
       setServerStatus('offline');
+      setError('Unable to connect to the server. Please check your connection.');
     }
   };
 
@@ -68,7 +74,9 @@ export default function App() {
 
       const newDevice = await response.json();
       setDevices((prevDevices) => [...prevDevices, newDevice]);
+      addNotification(`Device ${name} added successfully`);
     } catch (error) {
+      console.error('Error adding device:', error);
       setError(error.message || 'Failed to add device. Please try again.');
     }
   };
@@ -92,7 +100,9 @@ export default function App() {
         device._id === updatedDevice._id ? updatedDevice : device
       );
       setDevices(updatedDevices);
+      addNotification(`Device ${updatedDevice.name} updated successfully`);
     } catch (error) {
+      console.error('Error updating device:', error);
       setError(error.message || 'Failed to update device');
     }
   };
@@ -109,7 +119,9 @@ export default function App() {
       }
 
       setDevices((prevDevices) => prevDevices.filter(device => device._id !== id));
+      addNotification('Device deleted successfully');
     } catch (error) {
+      console.error('Error deleting device:', error);
       setError(error.message || 'Failed to delete device. Please try again.');
     }
   };
@@ -143,48 +155,51 @@ export default function App() {
             </div>
           </div>
         </div>
-        {error && <p className="error">{error}</p>}
-        <div className="device-container">
-          <div className="device-scroll-area">
-            <div className="device-grid">
-              {devices.length > 0 ? (
-                devices.map(device => (
-                  <DeviceCard 
-                    key={device._id} 
-                    device={device} 
-                    onDelete={(id) => {
-                      setShowConfirmation(true);
-                      setDeviceToDelete(id);
-                    }}
-                    onEdit={() => setEditDevice(device)}
-                    addNotification={addNotification}
-                  />
-                ))
-              ) : (
-                <p className="no-devices">No devices found. Add a device to get started!</p>
-              )}
-            </div>
-          </div>
+        {error && <p className="error-message">{error}</p>}
+        <div className="device-grid">
+          {devices.map((device) => (
+            <DeviceCard
+              key={device._id}
+              device={device}
+              onEdit={() => {
+                setEditDevice(device);
+              }}
+              addNotification={addNotification}
+            />
+          ))}
         </div>
-        {editDevice && (
-          <EditDeviceModal
-            device={editDevice}
-            onClose={() => setEditDevice(null)}
-            onSave={editDeviceInfo}
-            onDelete={handleDeleteDevice}
-          />
-        )}
       </div>
-      <AddESP32Modal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onAdd={addDevice} 
-      />
       {showNotifications && (
-        <NotificationList 
-          notifications={notifications} 
+        <NotificationList
+          notifications={notifications}
           onClose={() => setShowNotifications(false)}
           onClear={() => setNotifications([])}
+        />
+      )}
+      <AddESP32Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAdd={addDevice}
+      />
+      {editDevice && (
+        <EditDeviceModal
+          device={editDevice}
+          onClose={() => setEditDevice(null)}
+          onSave={editDeviceInfo}
+          onDelete={(id) => {
+            setDeviceToDelete(id);
+            setShowConfirmation(true);
+          }}
+        />
+      )}
+      {showConfirmation && (
+        <ConfirmationModal
+          message="Are you sure you want to delete this device?"
+          onConfirm={() => {
+            handleDeleteDevice(deviceToDelete);
+            setShowConfirmation(false);
+          }}
+          onCancel={() => setShowConfirmation(false)}
         />
       )}
     </div>

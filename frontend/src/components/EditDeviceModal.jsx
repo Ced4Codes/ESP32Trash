@@ -5,15 +5,24 @@ const EditDeviceModal = ({ device, onClose, onSave, onDelete }) => {
   const [name, setName] = useState(device.name);
   const [ip, setIp] = useState(device.ip);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave({
-      _id: device._id,
-      name,
-      ip,
-      trashBins: device.trashBins
-    });
-    onClose();
+    try {
+      const response = await onSave({
+        _id: device._id,
+        name,
+        ip,
+        trashBins: device.trashBins
+      });
+      if (response.ok) {
+        onClose();
+      } else {
+        const errorData = await response.json();
+        console.error('Error updating device:', errorData.message);
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+    }
   };
 
   const handleDelete = async () => {

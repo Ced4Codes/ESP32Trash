@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './AddESP32Modal.css';
 
-const AddESP32Modal = ({ isOpen, onClose, onAdd, buttonPosition }) => {
+const AddESP32Modal = ({ isOpen, onClose, onAdd }) => {
   const [name, setName] = useState('');
   const [ip, setIp] = useState('');
 

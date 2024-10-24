@@ -35,8 +35,8 @@ body {
   border-radius: 20px;
   padding: 30px;
   border: 1px solid #787878;
-  background: rgba(27, 27, 27, 0.0);
-  backdrop-filter: blur(150px);
+  background: linear-gradient(to bottom right, rgba(27, 27, 27, 0.7), rgba(27, 27, 27, 0.3));
+  backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
   align-items: center;

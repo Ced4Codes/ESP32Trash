@@ -1,32 +1,29 @@
 const mongoose = require('mongoose');
 
-const deviceSchema = new mongoose.Schema({
-  name: { type: String, unique: true },
-  ip: { type: String, unique: true },
-  trashBins: {
-    Bio: {
-      full: { type: Boolean, default: false },
-      addTrash: { type: Boolean, default: false },
-      count: { type: Number, default: 0 }
-    },
-    Plastic: {
-      full: { type: Boolean, default: false },
-      addTrash: { type: Boolean, default: false },
-      count: { type: Number, default: 0 }
-    },
-    Metal: {
-      full: { type: Boolean, default: false },
-      addTrash: { type: Boolean, default: false },
-      count: { type: Number, default: 0 }
-    },
-    Others: {
-      full: { type: Boolean, default: false },
-      addTrash: { type: Boolean, default: false },
-      count: { type: Number, default: 0 }
-    }
+const trashBinSchema = new mongoose.Schema({
+  count: {
+    type: Number,
+    default: 0
+  },
+  full: {
+    type: Boolean,
+    default: false
+  },
+  addTrash: {
+    type: Boolean,
+    default: false
   }
 });
 
-const Device = mongoose.model('Device', deviceSchema);
+const deviceSchema = new mongoose.Schema({
+  name: String,
+  ip: { type: String, unique: true },
+  trashBins: {
+    Bio: trashBinSchema,
+    Plastic: trashBinSchema,
+    Metal: trashBinSchema,
+    Others: trashBinSchema
+  }
+});
 
-module.exports = Device;
+module.exports = mongoose.model('Device', deviceSchema);
